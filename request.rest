@@ -18,3 +18,21 @@ POST http://localhost:5000/api/register
     "email":"vuerbvqiubviqor",
     "password":"21344738"
 }
+
+###
+POST http://localhost:5000/api/Login
+'Authorization':'Bearer eyJhbGciOiJIUz
+I1NiIsInR5cCI6IkpXVCJ9.ey
+###
+GET http://localhost:5000/Login
+
+###
+POST http://localhost:5000/api/login
+
+     'Accept': 'application/json',
+     'Content-Type': 'application/json',
+{
+   
+    "email":"vuerbvqiubviqor",
+    "password":"21344738"
+}
