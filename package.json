@@ -4,7 +4,7 @@
     "build": "npx tsc",
     "start": "node dist/index.js",
     "client": "npm start --prefix ./client",
-    "dev": "concurrently \"npm run client\" \"npx tsc --watch\" \"nodemon -q dist/index.js\"  "
+    "dev": "concurrently  \"npx tsc --watch\" \"nodemon -q dist/index.js\" \"npm run client\" "
   },
   "dependencies": {
     "@prisma/client": "^5.8.1",
@@ -19,14 +19,17 @@
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^6.4.0",
     "pm2": "^5.2.2",
-    "semver": "^7.5.4"
+    "semver": "^7.5.4",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
+    "@types/cookie-parser": "^1.4.6",
     "@types/cors": "^2.8.12",
     "@types/express": "^4.17.13",
     "@types/history": "^5.0.0",
     "@types/node": "^18.19.6",
     "@types/react-router-dom": "^5.3.3",
+    "@types/uuid": "^9.0.7",
     "concurrently": "^7.2.2",
     "prisma": "^5.8.1",
     "ts-node": "^10.9.2",

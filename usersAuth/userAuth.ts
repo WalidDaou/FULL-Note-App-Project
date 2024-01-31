@@ -4,22 +4,83 @@ import bodyParser from 'body-parser';
 import bcrypt from 'bcryptjs';
 import { PrismaClient } from '@prisma/client';
 import dotenv from 'dotenv';
-import JWT from 'jsonwebtoken';
+
 import { Request, Response } from 'express';
-import { Secret } from 'jsonwebtoken';
+
+import jwt, { Secret, JwtPayload } from 'jsonwebtoken';
 dotenv.config();
 
 const prisma = new PrismaClient();
 
 
+// const authenticateUser = (req: any, res: any) => {
+//     const cookies = req.cookies;
+//     const token = cookies && cookies.jwt;
+
+//     if (!token) {
+//         return res.status(401).json({ error: 'Unauthorized' });
+//     }
+
+//     jwt.verify(token, process.env.TOKEN_SECRET, (err: any, user: any) => {
+//         if (err) {
+//             return res.status(403).json({ error: 'Forbidden' });
+//         }
+
+//         req.user = user;
+//         next();
+//     });
+// };
+
+const notes = async (req: any, res: any) => {
+
+    const notes = await prisma.note.findMany();
+    res.json(notes);
+}
 
 
+const notex = async (req: any, res: any) => {
+    const userId = req.query.userId;
 
+    if (!userId) {
+        return res.status(400).json({ error: 'User ID is required' });
+    }
+
+    try {
+        const userNotes = await prisma.note.findMany({
+            where: { userId: parseInt(userId) },
+        });
+
+        res.json(userNotes);
+    } catch (error) {
+        console.error('Error fetching user notes:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+
+const note = async (req: any, res: any) => {
+
+    const { text, priority, category } = req.body;
+    const userId = req.user && req.user.userId;
+
+    // Add a new note
+    const newNote = await prisma.note.create({
+        data: {
+            text,
+            priority,
+            category,
+            userId,
+        },
+    });
+
+    res.json(newNote);
+}
 
 
 
 const handleRegister = async (req: any, res: any) => {
     const { name, email, password } = req.body;
+    const hashedPassword = await bcrypt.hash(password, 10);
     try {
         const check = await prisma.user.findUnique({
             where: {
@@ -34,17 +95,8 @@ const handleRegister = async (req: any, res: any) => {
             return res.status(500).json({ error: 'User already exists' });
         }
         // const USER = { name , email , password }
-        const tokenSecret = process.env.TOKEN_SECRET;
-
-        if (!tokenSecret) {
-            console.error('Error: TOKEN_SECRET is not defined in environment variables');
-            process.exit(1); // Exit the process or handle the error appropriately
-        }
 
 
-
-
-        const hashedPassword = await bcrypt.hash(password, 10);
         const newUser = await prisma.user.create({
             data: {
                 name,
@@ -52,14 +104,9 @@ const handleRegister = async (req: any, res: any) => {
                 hashedPassword,
             },
         });
-        const Token = JWT.sign(newUser, tokenSecret);
-        res.cookie("JWT", Token, {
-            maxAge: 60000,
-            httpOnly: true,
 
-        })
-        console.log(Token);
-        return res.json({ Token: Token });
+        console.log(newUser);
+        return res.json({ newUser });
 
 
         //   if (newUser){
@@ -78,7 +125,7 @@ const handleRegister = async (req: any, res: any) => {
 // const comonToken = authHedear && authHedear.split('')[1]
 // if (comonToken == null ) return res.sendStatus(404)
 // const tokenSecret = process.env.TOKEN_SECRET;
-// JWT.verify(comonToken ,tokenSecret,(err:any,user:any)=>{
+// jwt.verify(comonToken ,tokenSecret,(err:any,user:any)=>{
 //     if (err) return res.sendStatus(403)
 //     req.user = user
 //     next()
@@ -106,7 +153,7 @@ const handelogin = async (req: any, res: any) => {
             return res.status(400).json({ error: 'User does not exist' });
         }
 
-        const tokenSecret = process.env.TOKEN_SECRET;
+        const tokenSecret = process.env.TOKEN_SECRET || 'defaultSecret';
 
         if (!tokenSecret) {
             console.error('Error: TOKEN_SECRET is not defined in environment variables');
@@ -114,34 +161,34 @@ const handelogin = async (req: any, res: any) => {
         }
 
         const passcheck = await bcrypt.compare(req.body.password, check.hashedPassword);
-        const yap = JWT.sign({ userId: check.id, userEmail: check.email }, tokenSecret, { expiresIn: '10s' });
-
-        if (passcheck && yap) {
-            console.log('Login successful');
-            res.cookie("JWT", yap, {
-                maxAge: 60000,
-                httpOnly: true,
-
-            })
-            return res.status(200).json({ message: 'Login successful', token: yap });
-
-
-
-
-
-
-        } else {
-            console.log('Invalid password');
-            return res.status(400).json({ error: 'Invalid password' });
+        if (!passcheck) {
+            return res.status(401).json({ error: 'Invalid password' });
         }
+        const yap = jwt.sign({ name : check.name , userId: check.id, userEmail: check.email }, tokenSecret, {
+            expiresIn: '1h',
+        });
+
+    
+
+        const decoded = jwt.verify(yap, tokenSecret) as JwtPayload;
+        console.log('Decoded:', decoded);
+
+        // Rest of your code...
+        if (passcheck && yap && decoded) {
+            return res.json({ decodedToken: decoded, yap });
+        }
+
+
 
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
-};
 
-// const handelLogout = async (req: any, res: any, next: any) => {
+
+
+}
+// const handelLogout = async (req: any, res: any) => {
 //     // Assuming you have the user's token in the request headers
 //     const token = req.headers['authorization'];
 
@@ -154,7 +201,7 @@ const handelogin = async (req: any, res: any) => {
 //     const tokenSecret = process.env.TOKEN_SECRET;
 
 //     try {
-//         JWT.verify(token as string, tokenSecret, (err: any, user: any) => {
+//         jwt.verify(token as string, tokenSecret, (err: any, user: any) => {
 //             if (err) return res.sendStatus(403);
 //             req.user = user;
 //             next();
@@ -170,53 +217,125 @@ const handelogin = async (req: any, res: any) => {
 //     }
 // }    
 
-const handelLogout = async (req: any, res: any, next: any) => {
-    try {
-        // const authHeader = req.headers['authorization'];
+// const editNote = async (req: any, res: any) => {
 
-        // if (authHeader === undefined) {
-        //     return res.sendStatus(404);
-        // }
 
-        // const tokenSecret = process.env.TOKEN_SECRET;
 
-        // // Type assertion to tell TypeScript that authHeader is a string
-        // const authHeaderString = authHeader as string;
+//     const id = parseInt(req.params.id);
+//     const { text, priority, category, userId } = req.body;
+//     const updatedNote = await prisma.note.update({
+//         where: { id },
+//         data: { text, priority, category, userId },
+//     });
+//     res.json(updatedNote);
 
-        // JWT.verify(authHeaderString, tokenSecret, (err: any, user: any) => {
-        //     if (err) return res.sendStatus(403);
-        //     req.user = user;
-        //     next();
-        // });
 
-        // Perform any additional cleanup or logging out logic here
-        // Respond with a successful status
-        return res.status(200).json({ message: 'Logout successful' });
-    } catch (error) {
-        // Handle any errors that may occur during logout
-        console.error('Logout failed:', error);
-        return res.status(500).json({ error: 'Internal Server Error' });
+
+// }
+
+const editNote = async (req: any, res: any) => {
+    const id = parseInt(req.params.id);
+    const { text, priority, category, userId } = req.body;
+
+    // Assuming you have the userId of the currently authenticated user
+    const authenticatedUserId = req.user.id; // Adjust this based on your authentication setup
+
+    // Check if the authenticated user is the owner of the note
+    const existingNote = await prisma.note.findUnique({
+        where: { id },
+    });
+
+    if (!existingNote) {
+        return res.status(404).json({ error: 'Note not found' });
     }
-};
 
-
-
-const getBack = async (req: Request, res: Response) => {
-    const tokenSecret = process.env.TOKEN_SECRET;
-
-    try {
-        if (req.cookies.JWT) {
-            const verify = JWT.verify(req.cookies.JWT, tokenSecret as Secret);
-            res.redirect('/notes');
-        } else {
-            res.redirect('/login');
-        }
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Internal Server Error' });
+    if (existingNote.userId !== authenticatedUserId) {
+        return res.status(403).json({ error: 'Unauthorized - You are not the owner of this note' });
     }
+
+    // If the user is the owner, proceed with the update
+    const updatedNote = await prisma.note.update({
+        where: { id },
+        data: { text, priority, category, userId },
+    });
+
+    res.json(updatedNote);
+}
+
+const deleteNote = async (req: any, res: any) => {
+
+    const id = parseInt(req.params.id);
+
+    const authenticatedUserId = req.user.id; // Adjust this based on your authentication setup
+
+    // Check if the authenticated user is the owner of the note
+    const existingNote = await prisma.note.findUnique({
+        where: { id },
+    });
+
+    if (!existingNote) {
+        return res.status(404).json({ error: 'Note not found' });
+    }
+
+    if (existingNote.userId !== authenticatedUserId) {
+        return res.status(403).json({ error: 'Unauthorized - You are not the owner of this note' });
+    }
+
+    await prisma.note.delete({
+        where: { id },
+    });
+    res.json({ message: 'Note deleted successfully' });
+
+}
+
+
+
+
+const handelLogout = async (req: any, res: any) => {
+
+    res.clearCookie('token');
+    res.json({ message: 'Logout successful' });
+
+
+}
+
+
+
+// const getBack = async (req: Request, res: Response) => {
+
+
+
+
+
+//     const TOKEN_SECRET = process.env.TOKEN_SECRET;
+//     const token = req.get('Authorization')?.split(' ')[1];
+//     const decoded = jwt.verify(token, TOKEN_SECRET);
+
+//     try {
+//         if (token) {
+
+//             res.redirect('/notes');
+//         } else {
+//             res.redirect('/login');
+//         }
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).json({ error: 'Internal Server Error' });
+//     }
+// };
+
+
+
+export {
+    handleRegister,
+    handelogin,
+    handelLogout,
+    // getBack,
+    note,
+    notex,
+    notes,
+    // authenticateUser,
+    editNote,
+    deleteNote
+
 };
-
-
-
-export { handleRegister, handelogin, handelLogout, getBack };
