@@ -2,7 +2,6 @@ import express from 'express';
 import {
     handleRegister,
     handelogin,
-    handelLogout,
     //  getBack,
     note,
     notes,
@@ -10,7 +9,7 @@ import {
     //  authenticateUser,
     editNote,
     deleteNote
-} from '../usersAuth/userAuth';
+} from '../Controller/userController';
 import { auth } from './middelware/auth';
 
 
@@ -18,7 +17,6 @@ const router = express.Router();
 
 router.post('/api/register', handleRegister);
 router.post('/api/Login', handelogin);
-router.delete('/api/Logout', handelLogout);
 // router.get('/',getBack)
 // router.use(authenticateUser);
 router.get('/note', notes)

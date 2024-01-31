@@ -164,11 +164,11 @@ const handelogin = async (req: any, res: any) => {
         if (!passcheck) {
             return res.status(401).json({ error: 'Invalid password' });
         }
-        const yap = jwt.sign({ name : check.name , userId: check.id, userEmail: check.email }, tokenSecret, {
+        const yap = jwt.sign({ name: check.name, userId: check.id, userEmail: check.email }, tokenSecret, {
             expiresIn: '1h',
         });
 
-    
+
 
         const decoded = jwt.verify(yap, tokenSecret) as JwtPayload;
         console.log('Decoded:', decoded);
@@ -238,7 +238,7 @@ const editNote = async (req: any, res: any) => {
     const { text, priority, category, userId } = req.body;
 
     // Assuming you have the userId of the currently authenticated user
-    const authenticatedUserId = req.user.id; // Adjust this based on your authentication setup
+    const authenticatedUserId = req.user.userId; // Adjust this based on your authentication setup
 
     // Check if the authenticated user is the owner of the note
     const existingNote = await prisma.note.findUnique({
@@ -249,24 +249,24 @@ const editNote = async (req: any, res: any) => {
         return res.status(404).json({ error: 'Note not found' });
     }
 
-    if (existingNote.userId !== authenticatedUserId) {
+    if (existingNote.userId == authenticatedUserId) {
+        const updatedNote = await prisma.note.update({
+            where: { id },
+            data: { text, priority, category, userId },
+        });
+
+        res.json(updatedNote);
+    } else {
         return res.status(403).json({ error: 'Unauthorized - You are not the owner of this note' });
     }
-
     // If the user is the owner, proceed with the update
-    const updatedNote = await prisma.note.update({
-        where: { id },
-        data: { text, priority, category, userId },
-    });
-
-    res.json(updatedNote);
 }
 
 const deleteNote = async (req: any, res: any) => {
 
     const id = parseInt(req.params.id);
 
-    const authenticatedUserId = req.user.id; // Adjust this based on your authentication setup
+    const authenticatedUserId = req.user.userId; // Adjust this based on your authentication setup
 
     // Check if the authenticated user is the owner of the note
     const existingNote = await prisma.note.findUnique({
@@ -291,13 +291,7 @@ const deleteNote = async (req: any, res: any) => {
 
 
 
-const handelLogout = async (req: any, res: any) => {
 
-    res.clearCookie('token');
-    res.json({ message: 'Logout successful' });
-
-
-}
 
 
 
@@ -329,7 +323,6 @@ const handelLogout = async (req: any, res: any) => {
 export {
     handleRegister,
     handelogin,
-    handelLogout,
     // getBack,
     note,
     notex,
