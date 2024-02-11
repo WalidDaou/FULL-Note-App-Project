@@ -1,0 +1,28 @@
+.addNote {
+    border-radius: 20px;
+   
+    width: 500px;
+    height: 600px;
+    gap: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: rgb(248, 243, 243);
+}
+
+.addText {
+    height: 150px;
+    width: 370px;
+    display: flex;
+    border: 1px solid black;
+    margin-top: 30px;
+    border-radius: 20px;
+    padding: 10px;
+}
+.click{
+    width: 370px;
+    height: 35px;
+    font-size: 20px;
+    border-radius: 20px;
+    background-color: green;
+}

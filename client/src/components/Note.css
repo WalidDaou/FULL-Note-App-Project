@@ -1,0 +1,142 @@
+/* Note.css */
+
+.home {
+  background-color: lightblue;
+}
+
+.hobby.stuff {
+  background-color: lightgreen;
+}
+
+.fun {
+  background-color: lightpink;
+}
+
+.priority-1 {
+  order: 1;
+}
+
+.priority-2 {
+  order: 2;
+}
+
+.priority-3 {
+  order: 3;
+}
+
+.priority-4 {
+  order: 4;
+}
+
+.Note {
+  margin: 20px;
+
+  width: 450px;
+  height: 160px;
+  align-items: center;
+  border-radius: 20px;
+  min-width: 300px;
+  min-height: 150px;
+}
+
+.noteText {
+  gap: 10px;
+  width: 400px;
+  height: 150px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.forEdit {
+  display: flex;
+  flex-direction: row;
+
+}
+
+.noteED {
+  display: flex;
+
+  width: 450px;
+  height: 200px;
+  padding: 0px;
+  align-items: center;
+  background-color: transparent;
+  justify-content: space-between;
+}
+
+.ED {
+  gap: 20px;
+  display: flex;
+  flex-direction: column;
+
+  margin-right: 20px;
+  margin-bottom: 50px;
+}
+
+.Edit {
+  width: 50px;
+  height: 30px;
+  background-color: rgb(20, 228, 38);
+}
+
+.Delete {
+  width: 50px;
+  height: 30px;
+  background-color: rgb(247, 26, 10);
+}
+
+.save {
+  width: 370px;
+  height: 30px;
+  background-color: rgb(247, 98, 11);
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: center;
+  border-radius: 20px;
+}
+
+.textare {
+  width: 200px;
+  height: 80px;
+  margin-right: 20px;
+  margin-left: 20px;
+  margin-top: 20px;
+  border-radius: 20px;
+  padding: 10px;
+}
+
+.text {
+  width: 250px;
+  height: 100px;
+  border: 1px solid white;
+  overflow: scroll;
+
+}
+
+.stuff {
+  display: flex;
+  margin-left: 20px;
+  width: 400px;
+  height: 200px;
+  gap: 40px;
+}
+
+.priocaty {
+  display: flex;
+  flex-direction: column;
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+
+
+.PRIORITY {
+  margin-bottom: 20px;
+  margin-top: 22px;
+}
+
+.CATEGORY {
+  display: flex;
+}
